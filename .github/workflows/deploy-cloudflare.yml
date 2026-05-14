@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      # 提前切换 GitHub Actions Runtime 到 Node.js 24
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
       NAME: ${{ secrets.NAME || vars.NAME || 'cloud-mail' }}
       CUSTOM_DOMAIN: ${{ secrets.CUSTOM_DOMAIN || vars.CUSTOM_DOMAIN }}
       DOMAIN: ${{ secrets.DOMAIN || vars.DOMAIN }}
@@ -33,23 +36,22 @@ jobs:
       LINUXDO_CALLBACK_URL: ${{ secrets.LINUXDO_CALLBACK_URL || vars.LINUXDO_CALLBACK_URL }}
       LINUXDO_SWITCH: ${{ secrets.LINUXDO_SWITCH || vars.LINUXDO_SWITCH }}
 
-
     outputs:
       worker_url: ${{ steps.deploy.outputs.worker_url }}
 
-
     steps:
       - name: 🚚 检出代码仓库 / Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: ⚙ 设置 pnpm / Set up pnpm
-        uses: pnpm/action-setup@v4.1.0
+        uses: pnpm/action-setup@v6
         with:
           version: 9
 
       - name: ⚙ 设置 Node.js / Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
+          # 这是你的项目运行 Node 版本，不是 Actions Runtime
           node-version: "22"
           cache: "pnpm"
           cache-dependency-path: "./mail-worker/pnpm-lock.yaml"
@@ -65,7 +67,6 @@ jobs:
       - name: 🛠️ 设置环境 / Set up environment
         working-directory: ./mail-worker
         run: |
-          
           echo "🔐 Starting environment setup..."
           
           if [ -z "$JWT_SECRET" ] || grep -q '[?%#/\\]' <<< "$JWT_SECRET"; then
@@ -142,7 +143,6 @@ jobs:
       - name: ⚡ 设置KV数据库 / Set up KV database
         working-directory: ./mail-worker
         run: |
-          
           CONFIG_FILE="wrangler-action.toml"
           
           if [ -n "$KV_NAMESPACE_ID" ]; then
@@ -180,7 +180,6 @@ jobs:
       - name: 🐬 设置D1数据库 / Set up D1 database
         working-directory: ./mail-worker
         run: |
-          
           CONFIG_FILE="wrangler-action.toml"
           
           if [ -n "$D1_DATABASE_ID" ]; then
